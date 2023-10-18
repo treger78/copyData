@@ -1,0 +1,1 @@
+powershell -executionpolicy RemoteSigned -file moveUserData.ps1
