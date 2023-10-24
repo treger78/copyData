@@ -203,8 +203,6 @@ function copyObject {
     writeLog -text "Начато копирование ${copiedObjectName}" -pathToLogFile $pathToLogFile;
 
     try {
-        #Copy-Item "${from}" -Exclude $exclude -Recurse "$to" -Force -PassThru *>&1 | Tee-Object -FilePath $pathToLogFile -Append;
-
         robocopy "${from}" "$to" /XD $excludeDir /XF $excludeFiles /s /mir /unilog+:$pathToLogFile /tee;
 
         writeLog -text "Копирование ${copiedObjectName} успешно завершено" -pathToLogFile $pathToLogFile; 
@@ -213,97 +211,12 @@ function copyObject {
     }
 };
 
-function copyStartMenu {
-    param (
-        $pathToLogFile, $from, $destinationFolderPath
-    )
-
-    writeLog -text "Начато копирование стартового меню" -pathToLogFile $pathToLogFile;
-
-    $exclude = @("desktop.ini", "Immersive Control Panel.lnk");
-
-    try {
-        Copy-Item "${from}ProgramData\Microsoft\Windows\Start Menu\Programs\" -Exclude $exclude -Recurse "$destinationFolderPath\StartMenu\" -Force -PassThru *>&1 | Tee-Object -FilePath $pathToLogFile -Append;
-
-        writeLog -text "Копирование стартового меню успешно завершено" -pathToLogFile $pathToLogFile; 
-    } catch {
-        writeLog -text "Что-то пошло не так при копировании стартового меню. Проверьте результат." -pathToLogFile $pathToLogFile;
-    }
-};
-
-function copyUsers {
-    param (
-        $pathToLogFile, $from, $destinationFolderPath
-    )
-
-    writeLog -text "Начато копирование папки Users" -pathToLogFile $pathToLogFile;
-
-    $excludeDir = @(
-        "AppData",
-        "Application Data",
-        "Contacts",
-        "Cookies",
-        "IntelGraphicsProfiles",
-        "Local Settings",
-        "LtcJobs",
-        "NetHood",
-        "PrintHood",
-        "Recent",
-        "SendTo",
-        "Searches",
-        "главное меню",
-        "Мои документы",
-        "Мои видеозаписи",
-        "мои рисунки",
-        "Моя музыка",
-        "Music",
-        "MicrosoftEdgeBackups",
-        "Saved Games",
-        "Links",
-        "Шаблоны",
-        "All Users",
-        "Default",
-        "Default User",
-        "Все пользователи",
-        #"LocAdmin",
-        "*_wa",
-        "*_adm",
-        "*cache*",
-        "*Cache*"
-    );
-
-    $excludeFiles = @(
-        "ntuser*",
-        "Ntuser*",
-        "NTUSER*",
-        "*.tmp",
-        "*.temp",
-        "~*",
-        "*.bak",
-        "*.ini",
-        "*cache*",
-        "*Cache*"
-    );
-
-    try {
-        robocopy "${from}Users\" "$destinationFolderPath\Users\" /XD $excludeDir /XF $excludeFiles /s /mir /unilog+:$pathToLogFile /tee;
-
-        writeLog -text "Копирование папки Users успешно завершено" -pathToLogFile $pathToLogFile;
-    } catch {
-        writeLog -text "Что-то пошло не так при копировании папки Users. Проверьте результат." -pathToLogFile $pathToLogFile;
-    }
-};
-
 try {
     #Записываем имя компьютера в лог
     writeLog -text "Имя компьютера: $(gc env:computername)" -pathToLogFile $pathToLogFile
 
     #Копируем стартовое меню (список программ)
-    #copyStartMenu -pathToLogFile $pathToLogFile -from $from -destinationFolderPath $destinationFolderPath;
-
     copyObject -copiedObjectName "СТАРТОВОЕ МЕНЮ" -pathToLogFile $pathToLogFile -excludeDir "" -excludeFiles @("desktop.ini", "Immersive Control Panel.lnk") -from "${from}ProgramData\Microsoft\Windows\Start Menu\Programs" -to "$destinationFolderPath\StartMenu";
-
-    #copyUsers -pathToLogFile $pathToLogFile -from $from -destinationFolderPath $destinationFolderPath;
 
     $excludeDir = @(
         "AppData",
@@ -352,6 +265,7 @@ try {
         "*Cache*"
     );
 
+    #Копируем папки пользователей
     copyObject -copiedObjectName "ПАПКА USERS" -pathToLogFile $pathToLogFile -excludeDir $excludeDir -excludeFiles $excludeFiles -from "${from}Users" -to "$destinationFolderPath\Users";
 } catch {
     Write-Host "В процессе выполнения скрипта произошла ошибка, попробуйте запустить скрипт заново или выполните перенос вручную.";
