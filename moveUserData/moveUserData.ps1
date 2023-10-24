@@ -197,13 +197,15 @@ makeDestinationFolder -to $to -destinationFolderPath $destinationFolderPath -pat
 
 function copyObject {
     param (
-        $copiedObjectName, $pathToLogFile, $exclude, $from, $to
+        $copiedObjectName, $pathToLogFile, $excludeDir, $excludeFiles, $from, $to
     )
 
     writeLog -text "Начато копирование ${copiedObjectName}" -pathToLogFile $pathToLogFile;
 
     try {
-        Copy-Item "${from}" -Exclude $exclude -Recurse "$to" -Force -PassThru *>&1 | Tee-Object -FilePath $pathToLogFile -Append;
+        #Copy-Item "${from}" -Exclude $exclude -Recurse "$to" -Force -PassThru *>&1 | Tee-Object -FilePath $pathToLogFile -Append;
+
+        robocopy "${from}" "$to" /XD $excludeDir /XF $excludeFiles /s /mir /unilog+:$pathToLogFile /tee;
 
         writeLog -text "Копирование ${copiedObjectName} успешно завершено" -pathToLogFile $pathToLogFile; 
     } catch {
@@ -236,9 +238,9 @@ function copyUsers {
 
     writeLog -text "Начато копирование папки Users" -pathToLogFile $pathToLogFile;
 
-    $exclude = @(
+    $excludeDir = @(
         "AppData",
-        "#Application Data",
+        "Application Data",
         "Contacts",
         "Cookies",
         "IntelGraphicsProfiles",
@@ -251,7 +253,11 @@ function copyUsers {
         "Searches",
         "главное меню",
         "Мои документы",
+        "Мои видеозаписи",
+        "мои рисунки",
+        "Моя музыка",
         "Music",
+        "MicrosoftEdgeBackups",
         "Saved Games",
         "Links",
         "Шаблоны",
@@ -259,9 +265,14 @@ function copyUsers {
         "Default",
         "Default User",
         "Все пользователи",
-        "LocAdmin",
+        #"LocAdmin",
         "*_wa",
         "*_adm",
+        "*cache*",
+        "*Cache*"
+    );
+
+    $excludeFiles = @(
         "ntuser*",
         "Ntuser*",
         "NTUSER*",
@@ -269,11 +280,13 @@ function copyUsers {
         "*.temp",
         "~*",
         "*.bak",
-        "*.ini"
+        "*.ini",
+        "*cache*",
+        "*Cache*"
     );
 
     try {
-        Copy-Item "${from}Users\" -Exclude $exclude -Recurse "$destinationFolderPath\Users\" -Force -PassThru *>&1 | Tee-Object -FilePath $pathToLogFile -Append;
+        robocopy "${from}Users\" "$destinationFolderPath\Users\" /XD $excludeDir /XF $excludeFiles /s /mir /unilog+:$pathToLogFile /tee;
 
         writeLog -text "Копирование папки Users успешно завершено" -pathToLogFile $pathToLogFile;
     } catch {
@@ -287,13 +300,59 @@ try {
 
     #Копируем стартовое меню (список программ)
     #copyStartMenu -pathToLogFile $pathToLogFile -from $from -destinationFolderPath $destinationFolderPath;
-    
-    copyObject -copiedObjectName "СТАРТОВОЕ МЕНЮ" -pathToLogFile $pathToLogFile -exclude @("desktop.ini", "Immersive Control Panel.lnk") -from "${from}ProgramData\Microsoft\Windows\Start Menu\Programs\" -to "$destinationFolderPath\StartMenu\";
 
-    #TODO: ПОПРАВИТЬ ФИЛЬТРАЦИЮ (EXCLUDE) ПАПОК В ФУНКЦИИ COPYUSERS, как функция начнет корректно, попробовать использовать copyObject
-    copyUsers -pathToLogFile $pathToLogFile -from $from -destinationFolderPath $destinationFolderPath;
+    copyObject -copiedObjectName "СТАРТОВОЕ МЕНЮ" -pathToLogFile $pathToLogFile -excludeDir "" -excludeFiles @("desktop.ini", "Immersive Control Panel.lnk") -from "${from}ProgramData\Microsoft\Windows\Start Menu\Programs" -to "$destinationFolderPath\StartMenu";
 
+    #copyUsers -pathToLogFile $pathToLogFile -from $from -destinationFolderPath $destinationFolderPath;
 
+    $excludeDir = @(
+        "AppData",
+        "Application Data",
+        "Contacts",
+        "Cookies",
+        "IntelGraphicsProfiles",
+        "Local Settings",
+        "LtcJobs",
+        "NetHood",
+        "PrintHood",
+        "Recent",
+        "SendTo",
+        "Searches",
+        "главное меню",
+        "Мои документы",
+        "Мои видеозаписи",
+        "мои рисунки",
+        "Моя музыка",
+        "Music",
+        "MicrosoftEdgeBackups",
+        "Saved Games",
+        "Links",
+        "Шаблоны",
+        "All Users",
+        "Default",
+        "Default User",
+        "Все пользователи",
+        #"LocAdmin",
+        "*_wa",
+        "*_adm",
+        "*cache*",
+        "*Cache*"
+    );
+
+    $excludeFiles = @(
+        "ntuser*",
+        "Ntuser*",
+        "NTUSER*",
+        "*.tmp",
+        "*.temp",
+        "~*",
+        "*.bak",
+        "*.ini",
+        "*cache*",
+        "*Cache*"
+    );
+
+    copyObject -copiedObjectName "ПАПКА USERS" -pathToLogFile $pathToLogFile -excludeDir $excludeDir -excludeFiles $excludeFiles -from "${from}Users" -to "$destinationFolderPath\Users";
 } catch {
     Write-Host "В процессе выполнения скрипта произошла ошибка, попробуйте запустить скрипт заново или выполните перенос вручную.";
 }
@@ -301,36 +360,6 @@ try {
 pause;
 
 #TODO:
-#
-#***Логика скрипта: рекурсивно копироваться все кроме файлов и папок из массива исключений
-#
-#ПАПКИ:
-#AppData*
-#Application Data
-#Contacts
-#Cookies
-#IntelGraphicsProfiles
-#Local Settings
-#LtcJobs
-#NetHood
-#PrintHood
-#Recent
-#SendTo
-#Searches
-#главное меню
-#Мои документы(*?)
-#Music
-#Saved Games
-#Links
-#Шаблоны
-#
-#Также не переносить следующие папки пользователей:
-#
-#All Users, Default, Default User, Все пользователи, LocAdmin; все что заканчивается на *_wa или *_adm
-#
-#Файлы:
-#*Файлы, начинающиеся с ntuser* (без учета регистра)
-#*???Все временные файлы?: *.tmp, *.temp, нач. с ~,  .bak, *.ini
 #
 #
 #TODO: *также сделать скрипт для копирования уже на новом диске данных из temp\users\user в C:\Users\user
