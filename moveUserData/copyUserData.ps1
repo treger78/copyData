@@ -1,15 +1,15 @@
 #Переменная-флаг
 $isRight = $false;
 
-#Буква диска, откуда будет переносится информация
+#Буква диска, откуда будет копироваться информация
 $from = "";
-#Буква диска, куда будет переносится информация
+#Буква диска, куда будет копироваться информация
 $to = "";
 
 #Требуется ли сохранить папки AppData
-$isAppDataRequired = "";
+#$isAppDataRequired = "";
 #Требуется ли сохранить временные файлы
-$isTempFilesRequired = "";
+#$isTempFilesRequired = "";
 
 #Функция, проверяющая существует ли диск по переданной букве
 function checkDiskExistence {
@@ -33,7 +33,7 @@ function getDiskLabel {
     return("${label} (${diskLetter})");
 };
 
-#Функция для сбора информации о дисках: откуда и куда будет переносится информация
+#Функция для сбора информации о дисках: откуда и куда будет копироваться информация
 function askFromTo {
     param (
         $question, $from
@@ -56,7 +56,7 @@ function askFromTo {
         }
 
         if ($diskLetter -eq $from) {
-            Write-Host "Для переноса данных укажите диск, не являющийся источником!" `n;
+            Write-Host "Для копирования данных укажите диск, не являющийся источником!" `n;
 
             continue;
         }
@@ -107,26 +107,26 @@ function Get-Now {
 
 #Диалог с пользователем. Собираем необходимую информацию перед началом выполнения скрипта.
 while ($isRight -ne $true) {
-    #Считываем с клавиатуры и проверяем на корректность букву диска, с которого необходимо перенести данные
-    $from = askFromTo("Укажите букву диска, с которого необходимо перенести данные:");
+    #Считываем с клавиатуры и проверяем на корректность букву диска, с которого необходимо скопировать данные
+    $from = askFromTo("Укажите букву диска, с которого необходимо скопировать данные:");
 
-    #Считываем с клавиатуры и проверяем на корректность букву диска, на который необходимо перенести данные
-    $to = askFromTo "Укажите букву диска, на который будут перенесены данные:" $from;
+    #Считываем с клавиатуры и проверяем на корректность букву диска, на который необходимо скопировать данные
+    $to = askFromTo "Укажите букву диска, на который будут скопированы данные:" $from;
 
     #Спрашиваем у пользователя необходимо ли сохранить папки AppData и проверяем ввод на корректность
-    $isAppDataRequired = askAdditionalInfo("Сохранить папки AppData? Y - да, N - нет:");
+    #$isAppDataRequired = askAdditionalInfo("Сохранить папки AppData? Y - да, N - нет:");
 
     #Спрашиваем у пользователя необходимо ли сохранить temp-файлы и проверяем ввод на корректность
-    $isTempFilesRequired = askAdditionalInfo("Желаете ли сохранить временные (*.temp) файлы пользователей при переносе? Y - да, N - нет:");
+    #$isTempFilesRequired = askAdditionalInfo("Желаете ли сохранить временные (*.temp) файлы пользователей при копировании? Y - да, N - нет:");
 
     #Выводим пользователю все введенные ранее данные и спрашиваем все ли корректно
     while ($isRight -ne $true) {
         Write-Host `n;
         Write-Host "Вы ввели следующие данные:";
-        Write-Host "Диск, с которого необходимо перенести данные: $(getDiskLabel($from))";
-        Write-Host "Диск, куда нужно перенести данные: $(getDiskLabel($to))";
-        Write-Host "Сохранить папки AppData? - ${isAppDataRequired}";
-        Write-Host "Сохранить временные (*.temp) файлы? - ${isTempFilesRequired}" `n;
+        Write-Host "Диск, с которого необходимо скопировать данные: $(getDiskLabel($from))";
+        Write-Host "Диск, куда нужно скопировать данные: $(getDiskLabel($to))";
+        #Write-Host "Сохранить папки AppData? - ${isAppDataRequired}";
+        #Write-Host "Сохранить временные (*.temp) файлы? - ${isTempFilesRequired}" `n;
         Write-Host "Если все верно - Y, для внесения изменений - N:";
 
         $isRight = Read-Host;
@@ -218,6 +218,7 @@ try {
     #Копируем стартовое меню (список программ)
     copyObject -copiedObjectName "СТАРТОВОЕ МЕНЮ" -pathToLogFile $pathToLogFile -excludeDir "" -excludeFiles @("desktop.ini", "Immersive Control Panel.lnk") -from "${from}ProgramData\Microsoft\Windows\Start Menu\Programs" -to "$destinationFolderPath\StartMenu";
 
+    #Перечень исключаемых из копирования папок
     $excludeDir = @(
         "AppData",
         "Application Data",
@@ -245,13 +246,16 @@ try {
         "Default",
         "Default User",
         "Все пользователи",
-        #"LocAdmin",
+        "LocAdmin",
         "*_wa",
         "*_adm",
         "*cache*",
-        "*Cache*"
+        "*Cache*",
+        "*Temp*",
+        "*temp*"
     );
 
+    #Перечень исключаемых из копирования файлов
     $excludeFiles = @(
         "ntuser*",
         "Ntuser*",
@@ -268,7 +272,7 @@ try {
     #Копируем папки пользователей
     copyObject -copiedObjectName "ПАПКА USERS" -pathToLogFile $pathToLogFile -excludeDir $excludeDir -excludeFiles $excludeFiles -from "${from}Users" -to "$destinationFolderPath\Users";
 } catch {
-    Write-Host "В процессе выполнения скрипта произошла ошибка, попробуйте запустить скрипт заново или выполните перенос вручную.";
+    Write-Host "В процессе выполнения скрипта произошла ошибка, попробуйте запустить скрипт заново или выполните копирование вручную.";
 }
 
 pause;
@@ -276,6 +280,6 @@ pause;
 #TODO:
 #
 #
-#TODO: *также сделать скрипт для копирования уже на новом диске данных из temp\users\user в C:\Users\user
+#TODO: *также сделать скрипт для копирования уже на новом диске данных из serialNumber\users\user в C:\Users\user
 #
 #
