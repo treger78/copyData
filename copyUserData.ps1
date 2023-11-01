@@ -1,3 +1,7 @@
+[Console]::outputEncoding = [System.Text.Encoding]::GetEncoding("windows-1251");
+
+$PSDefaultParameterValues['Out-File:Encoding'] = "windows-1251";
+
 #Переменная-флаг
 $isRight = $false;
 
@@ -98,7 +102,7 @@ function askAdditionalInfo {
 };
 
 function getSerialNumber {
-    return((Get-WmiObject -class win32_bios).SerialNumber);
+    return((wmic bios get serialnumber)[2].trim());
 };
 
 function Get-Now {
