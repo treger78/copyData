@@ -1,0 +1,1 @@
+pwsh.exe -executionpolicy RemoteSigned -file copyUserData.ps1
