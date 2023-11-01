@@ -145,8 +145,7 @@ while ($isRight -ne $true) {
     }
 }
 
-$destinationFolderName = "$(getSerialNumber)";
-$destinationFolderPath = "$to$destinationFolderName";
+$destinationFolderPath = "$to$(getSerialNumber)";
 $pathToLogFile = "$destinationFolderPath\logs.txt";
 
 function writeLog {
@@ -278,6 +277,9 @@ try {
 pause;
 
 #TODO:
+#
+#
+#TODO: сделать функцию для копирования всех папок пользователя в корне диска-источника кром стандартных (Users, Program Files, etc...)
 #
 #
 #TODO: *также сделать скрипт для копирования уже на новом диске данных из serialNumber\users\user в C:\Users\user
