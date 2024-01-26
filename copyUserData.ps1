@@ -1,6 +1,11 @@
+#$ErrorActionPreference = "SilentlyContinue";
+#& cmd /c ver | Out-Null
+
 [Console]::outputEncoding = [System.Text.Encoding]::GetEncoding("windows-1251");
+#$OutputEncoding = [System.Text.Encoding]::GetEncoding("windows-1251");
 
 $PSDefaultParameterValues['Out-File:Encoding'] = "windows-1251";
+#$PSDefaultParameterValues['-Out-File:Encoding'] = "windows-1251";
 
 #Переменная-флаг
 $isRight = $false;
@@ -286,6 +291,6 @@ pause;
 #TODO: сделать функцию для копирования всех папок пользователя в корне диска-источника кром стандартных (Users, Program Files, etc...)
 #
 #
-#TODO: *также сделать скрипт для копирования уже на новом диске данных из serialNumber\users\user в C:\Users\user
+#TODO: *также сделать скрипт для копирования уже на новом диске данных из serialNumber\users\user в C:\temp\serialNumber\
 #
 #
