@@ -107,7 +107,8 @@ function askAdditionalInfo {
 };
 
 function getSerialNumber {
-    return((wmic bios get serialnumber)[2].trim());
+    return (Get-CIMInstance win32_bios)[0].SerialNumber;
+    #return((wmic bios get serialnumber)[2].trim());
 };
 
 function Get-Now {
@@ -221,7 +222,7 @@ function copyObject {
 
 try {
     #Записываем имя компьютера в лог
-    writeLog -text "Имя компьютера: $(gc env:computername)" -pathToLogFile $pathToLogFile
+    #writeLog -text "Имя компьютера: $(gc env:computername)" -pathToLogFile $pathToLogFile
 
     #Копируем стартовое меню (список программ)
     copyObject -copiedObjectName "СТАРТОВОЕ МЕНЮ" -pathToLogFile $pathToLogFile -excludeDir "" -excludeFiles @("desktop.ini", "Immersive Control Panel.lnk") -from "${from}ProgramData\Microsoft\Windows\Start Menu\Programs" -to "$destinationFolderPath\StartMenu";
