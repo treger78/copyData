@@ -155,7 +155,9 @@ while ($isRight -ne $true) {
     }
 }
 
-$destinationFolderPath = "$to$(getSerialNumber)";
+#$destinationFolderPath = "$to$(getSerialNumber)";
+$destinationFolderName = (Get-Now) -replace ':', ''; #Имя папки назначения: текущая дата со временем, между цифрами времени удален символ :
+$destinationFolderPath = "$to$destinationFolderName";
 $pathToLogFile = "$destinationFolderPath\logs.txt";
 
 function writeLog {
