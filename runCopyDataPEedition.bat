@@ -1,0 +1,1 @@
+%~dp0PowerShell-7.4.1-win-x64\pwsh.exe -executionpolicy RemoteSigned -file copyData.ps1
