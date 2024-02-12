@@ -1,3 +1,4 @@
+#v0.1.0
 #$ErrorActionPreference = "SilentlyContinue";
 #& cmd /c ver | Out-Null
 
