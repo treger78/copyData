@@ -1,4 +1,4 @@
-#v0.1.0
+#v0.2.0-beta
 #$ErrorActionPreference = "SilentlyContinue";
 #& cmd /c ver | Out-Null
 
@@ -215,7 +215,7 @@ function copyObject {
     writeLog -text "Начато копирование ${copiedObjectName}" -pathToLogFile $pathToLogFile;
 
     try {
-        robocopy "${from}" "$to" /XD $excludeDir /XF $excludeFiles /s /mir /unilog+:$pathToLogFile /tee;
+        robocopy "${from}" "$to" /XD $excludeDir /XF $excludeFiles /s /mir /R:2 /W:10 /unilog+:$pathToLogFile /tee;
 
         writeLog -text "Копирование ${copiedObjectName} успешно завершено" -pathToLogFile $pathToLogFile; 
     } catch {
@@ -255,12 +255,15 @@ try {
         "Links",
         "Шаблоны",
         "All Users",
-        "Default",
+        "*Default*",
         "Default User",
         "Все пользователи",
-        "LocAdmin",
-        "*_wa",
-        "*_adm",
+        "*LocAdmin*",
+        "*ksnproxy*",
+        "*aaklyuev2*",
+        "*_wa*",
+        "*_adm*",
+        "*$*",
         "*cache*",
         "*Cache*",
         "*Temp*",
@@ -289,8 +292,19 @@ try {
 
 pause;
 
+###
+#
+# v0.2.0
+# - исправлено зацикливание скрипта при копировании битых / недоступных файлов (установлено ограничение в 2 попытки)
+# - подправлен перечень исключаемых папок в excludeDir
+#
+###
+
+
 #TODO:
 #
+# - общий прогресс бар для robocopy, чтобы знать, сколько примерно будет занимать копирование по времени (?)
+# - добавить в исключения стандартные вложенные папки, если они не содержат нестандартных файлов (?)
 #
 #TODO: сделать функцию для копирования всех папок пользователя в корне диска-источника кром стандартных (Users, Program Files, etc...)
 #
